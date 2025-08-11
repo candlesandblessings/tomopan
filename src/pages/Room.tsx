@@ -72,7 +72,25 @@ const Room = () => {
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "players", filter: `room_id=eq.${roomId}` },
-        (payload) => setPlayers((prev) => [...prev, payload.new])
+        (payload) => {
+          setPlayers((prev) => {
+            if (prev.some((p) => p.id === payload.new.id)) {
+              return prev;
+            }
+            return [...prev, payload.new];
+          });
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "players", filter: `room_id=eq.${roomId}` },
+        (payload) => {
+          setPlayers((prev) =>
+            prev.map((player) =>
+              player.id === payload.new.id ? payload.new : player
+            )
+          );
+        }
       )
       .on(
         "postgres_changes",
