@@ -22,17 +22,19 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Header />
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/game" element={<Game />} />
-          <Route path="/create" element={<CreateRoom />} />
-          <Route path="/join" element={<JoinRoom />} />
-          <Route path="/room/:roomId" element={<Room />} />
-          <Route path="/game/:roomId" element={<GameRoom />} />
-          <Route path="/login" element={<Login />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <div className="px-[env(safe-area-inset-right)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)]">
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/game" element={<Game />} />
+            <Route path="/create" element={<CreateRoom />} />
+            <Route path="/join" element={<JoinRoom />} />
+            <Route path="/room/:roomId" element={<Room />} />
+            <Route path="/game/:roomId" element={<GameRoom />} />
+            <Route path="/login" element={<Login />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </div>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

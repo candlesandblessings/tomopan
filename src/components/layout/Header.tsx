@@ -4,7 +4,7 @@ import { Wifi } from "lucide-react";
 
 const Header = () => {
   return (
-    <header className="sticky top-0 z-40 backdrop-blur supports-[backdrop-filter]:bg-background/70 border-b border-border">
+    <header className="sticky top-0 z-40 backdrop-blur supports-[backdrop-filter]:bg-background/70 border-b border-border pt-[env(safe-area-inset-top)]">
       <nav className="container mx-auto flex items-center justify-between h-14 px-2">
         <NavLink to="/" className="flex items-center gap-2">
           <span aria-hidden className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-[var(--shadow-glow)]">
