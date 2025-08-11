@@ -10,20 +10,18 @@ import { useRoom } from "@/hooks/useRoom";
 
 const CreateRoom = () => {
   const [roomName, setRoomName] = useState("");
-  const [playerName, setPlayerName] = useState("");
   const [maxPlayers, setMaxPlayers] = useState("6");
   const [roundDuration, setRoundDuration] = useState("60");
   const navigate = useNavigate();
   const { createRoom } = useRoom();
 
   const handleCreateRoom = () => {
-    if (!roomName.trim() || !playerName.trim()) {
+    if (!roomName.trim()) {
       return;
     }
     
     createRoom({
       roomName,
-      playerName,
       maxPlayers: parseInt(maxPlayers),
       roundDuration: parseInt(roundDuration)
     });
@@ -51,17 +49,6 @@ const CreateRoom = () => {
               placeholder="Enter room name" 
               value={roomName}
               onChange={(e) => setRoomName(e.target.value)}
-              className="py-2 px-3 text-sm"
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="playerName" className="text-sm">Your name</Label>
-            <Input 
-              id="playerName" 
-              placeholder="Enter your name" 
-              value={playerName}
-              onChange={(e) => setPlayerName(e.target.value)}
               className="py-2 px-3 text-sm"
             />
           </div>
@@ -114,23 +101,6 @@ const CreateRoom = () => {
               Join existing room
             </Button>
           </div>
-        </CardContent>
-      </Card>
-      
-      <Card className="max-w-2xl mx-auto mt-6">
-        <CardHeader className="py-4 px-5">
-          <CardTitle className="text-lg">How online play works</CardTitle>
-        </CardHeader>
-        <CardContent className="py-4 px-5">
-          <ol className="list-decimal pl-5 space-y-2 text-sm">
-            <li>Create a room and share the room code with friends</li>
-            <li>Friends join using the room code</li>
-            <li>Set game preferences (round duration, categories, etc.)</li>
-            <li>Start the game - all players get the same letter simultaneously</li>
-            <li>Players submit answers for each category before time runs out</li>
-            <li>Answers are automatically scored and validated</li>
-            <li>See real-time results and leaderboards</li>
-          </ol>
         </CardContent>
       </Card>
     </main>

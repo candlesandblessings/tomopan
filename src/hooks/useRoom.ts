@@ -1,47 +1,27 @@
-import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 export const useRoom = () => {
-  const [rooms, setRooms] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const fetchRooms = async () => {
-      const { data, error } = await supabase
-        .from("rooms")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        toast({
-          title: "Error",
-          description: "Failed to fetch rooms",
-          variant: "destructive",
-        });
-      } else {
-        setRooms(data || []);
-      }
-      setLoading(false);
-    };
-
-    fetchRooms();
-  }, [toast]);
+  const { user, profile } = useAuth();
 
   const createRoom = async ({
     roomName,
-    playerName,
     maxPlayers = 6,
     roundDuration = 60
   }: {
     roomName: string;
-    playerName: string;
     maxPlayers?: number;
     roundDuration?: number;
   }) => {
+    if (!user || !profile) {
+      toast({ title: "Authentication Error", description: "You must be logged in to create a room.", variant: "destructive" });
+      return;
+    }
+
     try {
       const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
       
@@ -54,29 +34,24 @@ export const useRoom = () => {
           duration: roundDuration,
           current_players: 1,
           status: "waiting",
+          created_by: user.id,
         })
         .select()
         .single();
 
       if (roomError) throw roomError;
 
-      const { data: playerData, error: playerError } = await supabase
+      const { error: playerError } = await supabase
         .from("players")
         .insert({
           room_id: roomData.id,
-          name: playerName,
+          name: profile.username || user.email,
           is_host: true,
           score: 0,
-        })
-        .select()
-        .single();
+          user_id: user.id,
+        });
 
       if (playerError) throw playerError;
-
-      if (playerData) {
-        // This is how we'll identify the host
-        localStorage.setItem("currentPlayerId", playerData.id);
-      }
 
       toast({
         title: "Room created",
@@ -93,7 +68,12 @@ export const useRoom = () => {
     }
   };
 
-  const joinRoom = async (roomCode: string, playerName: string) => {
+  const joinRoom = async (roomCode: string) => {
+    if (!user || !profile) {
+      toast({ title: "Authentication Error", description: "You must be logged in to join a room.", variant: "destructive" });
+      return;
+    }
+    
     try {
       const { data: roomData, error: roomError } = await supabase
         .from("rooms")
@@ -105,16 +85,12 @@ export const useRoom = () => {
         throw new Error("Room not found");
       }
 
-      const { data: newPlayerId, error: joinError } = await supabase.rpc('join_room', {
+      const { error: joinError } = await supabase.rpc('join_room', {
         p_room_code: roomCode,
-        p_player_name: playerName
+        p_player_name: profile.username || user.email
       });
 
       if (joinError) throw joinError;
-
-      if (newPlayerId) {
-        localStorage.setItem("currentPlayerId", newPlayerId);
-      }
 
       toast({
         title: "Room joined",
@@ -140,7 +116,6 @@ export const useRoom = () => {
         title: "Room Ended",
         description: "The room has been successfully closed.",
       });
-      localStorage.removeItem("currentPlayerId");
       navigate("/");
     } catch (error: any) {
       toast({
@@ -151,5 +126,5 @@ export const useRoom = () => {
     }
   };
 
-  return { rooms, loading, createRoom, joinRoom, endRoom };
+  return { createRoom, joinRoom, endRoom };
 };

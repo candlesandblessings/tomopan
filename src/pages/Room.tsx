@@ -7,12 +7,14 @@ import { useToast } from "@/hooks/use-toast";
 import HeadSEO from "@/components/seo/HeadSEO";
 import { Users, Copy, Play, XCircle } from "lucide-react";
 import { useRoom } from "@/hooks/useRoom";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Room = () => {
   const { roomId } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { endRoom } = useRoom();
+  const { user } = useAuth();
   const [room, setRoom] = useState<any>(null);
   const [players, setPlayers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -30,6 +32,7 @@ const Room = () => {
 
       if (roomError || !roomData) throw new Error("Room not found or already ended.");
       setRoom(roomData);
+      setIsHost(roomData.created_by === user?.id);
 
       const { data: playersData, error: playersError } = await supabase
         .from("players")
@@ -50,7 +53,7 @@ const Room = () => {
     } finally {
       setLoading(false);
     }
-  }, [roomId, toast, navigate]);
+  }, [roomId, toast, navigate, user]);
 
   useEffect(() => {
     fetchInitialData();
@@ -94,14 +97,6 @@ const Room = () => {
     };
   }, [roomId, navigate, toast]);
 
-  useEffect(() => {
-    const currentPlayerId = localStorage.getItem("currentPlayerId");
-    if (currentPlayerId && players.length > 0) {
-      const hostPlayer = players.find(p => p.id === currentPlayerId && p.is_host);
-      setIsHost(!!hostPlayer);
-    }
-  }, [players]);
-
   const copyRoomCode = () => {
     if (room?.code) {
       navigator.clipboard.writeText(room.code);
@@ -125,7 +120,6 @@ const Room = () => {
     try {
       const { error } = await supabase.from("rooms").update({ status: "playing" }).eq("id", roomId);
       if (error) throw error;
-      // Navigation is handled by the real-time subscription for all players at once.
     } catch (error: any) {
       toast({ title: "Error", description: error.message || "Failed to start game", variant: "destructive" });
     }
@@ -232,32 +226,6 @@ const Room = () => {
                   No players in room yet
                 </p>
               )}
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="py-3 px-4">
-            <CardTitle className="text-lg">Game Settings</CardTitle>
-          </CardHeader>
-          <CardContent className="py-3 px-4">
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-muted-foreground text-sm">Round Duration</span>
-                <span className="font-medium text-sm">{room.duration || 60} seconds</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-muted-foreground text-sm">Categories</span>
-                <span className="font-medium text-sm text-right">Țări, Orașe, Munți, Ape, Plante, Animale, Nume</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-muted-foreground text-sm">Max Players</span>
-                <span className="font-medium text-sm">{room.max_players}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-muted-foreground text-sm">Status</span>
-                <span className="font-medium text-sm capitalize">{room.status}</span>
-              </div>
             </div>
           </CardContent>
         </Card>
