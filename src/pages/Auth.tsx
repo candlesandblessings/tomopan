@@ -26,14 +26,31 @@ const Auth = () => {
           providers={[]}
           theme="dark"
           view="sign_in"
-          additionalData={{
-            sign_up: {
-              options: {
-                data: {
-                  username: 'new_user' // Placeholder, will need a proper username field
-                }
-              }
-            }
+          localization={{
+            variables: {
+              sign_up: {
+                email_label: 'Email address',
+                password_label: 'Create a Password',
+                button_label: 'Sign up',
+                social_provider_text: 'Sign in with {{provider}}',
+                link_text: 'Already have an account? Sign in',
+                additional_fields: [
+                  {
+                    type: 'text',
+                    label: 'Username',
+                    key: 'username',
+                    placeholder: 'Choose a username',
+                  },
+                ],
+              },
+              sign_in: {
+                email_label: 'Email address',
+                password_label: 'Your Password',
+                button_label: 'Sign in',
+                social_provider_text: 'Sign in with {{provider}}',
+                link_text: "Don't have an account? Sign up",
+              },
+            },
           }}
         />
       </div>

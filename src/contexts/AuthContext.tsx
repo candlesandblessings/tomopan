@@ -18,34 +18,55 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const fetchAndSetProfile = async (user: User) => {
+    let { data: profileData } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+
+    if (!profileData) {
+      // Profile doesn't exist, likely due to a past signup issue.
+      // Let's create one to recover the account.
+      const username = user.email?.split('@')[0] + `_${Math.random().toString(36).substring(2, 6)}`;
+      const { data: newProfile, error: createError } = await supabase
+        .from('profiles')
+        .insert({ id: user.id, username })
+        .select()
+        .single();
+      
+      if (createError) {
+        console.error("Error creating recovery profile:", createError);
+        setProfile(null);
+      } else {
+        profileData = newProfile;
+      }
+    }
+    setProfile(profileData);
+  };
+
   useEffect(() => {
-    const getSession = async () => {
+    const getSessionAndProfile = async () => {
+      setLoading(true);
       const { data: { session } } = await supabase.auth.getSession();
       setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-        setProfile(profileData);
+      const currentUser = session?.user;
+      setUser(currentUser ?? null);
+      if (currentUser) {
+        await fetchAndSetProfile(currentUser);
       }
       setLoading(false);
     };
 
-    getSession();
+    getSessionAndProfile();
 
     const { data: authListener } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      setLoading(true);
+      const currentUser = session?.user;
       setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-        setProfile(profileData);
+      setUser(currentUser ?? null);
+      if (currentUser) {
+        await fetchAndSetProfile(currentUser);
       } else {
         setProfile(null);
       }
