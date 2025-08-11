@@ -28,15 +28,16 @@ const Room = () => {
 
     if (playersError) {
       console.error("Error fetching players:", playersError);
-      toast({
-        title: "Error",
-        description: "Failed to update player list.",
-        variant: "destructive",
-      });
     } else {
       setPlayers(playersData || []);
     }
-  }, [roomId, toast]);
+  }, [roomId]);
+
+  useEffect(() => {
+    if (room?.status === 'playing') {
+      navigate(`/game/${roomId}`);
+    }
+  }, [room, navigate, roomId]);
 
   useEffect(() => {
     if (!roomId) return;
@@ -51,12 +52,11 @@ const Room = () => {
 
         if (roomError) throw roomError;
         setRoom(roomData);
-
         await fetchPlayersInRoom();
       } catch (error: any) {
         toast({
-          title: "Error",
-          description: error.message || "Failed to load room",
+          title: "Error loading room",
+          description: "The room may have been deleted or does not exist.",
           variant: "destructive",
         });
         navigate("/");
@@ -67,29 +67,30 @@ const Room = () => {
 
     fetchInitialData();
 
-    const roomSubscription = supabase
-      .channel(`room-updates-${roomId}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'rooms', filter: `id=eq.${roomId}` }, (payload) => {
-        const updatedRoom = (payload as any).new;
-        setRoom(updatedRoom);
-        if (updatedRoom.status === 'playing') {
-          navigate(`/game/${roomId}`);
+    const channel = supabase.channel(`room-channel-${roomId}`);
+    
+    channel
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'rooms', filter: `id=eq.${roomId}` },
+        (payload) => {
+          if (payload.eventType === 'DELETE') {
+            toast({ title: "Room Closed", description: "The host has closed the room." });
+            navigate('/');
+          } else {
+            setRoom(payload.new);
+          }
         }
-      })
-      .subscribe();
-
-    const playersSubscription = supabase
-      .channel(`player-updates-${roomId}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'players', filter: `room_id=eq.${roomId}` }, 
-        () => {
-          fetchPlayersInRoom();
-        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'players', filter: `room_id=eq.${roomId}` },
+        fetchPlayersInRoom
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(roomSubscription);
-      supabase.removeChannel(playersSubscription);
+      supabase.removeChannel(channel);
     };
   }, [roomId, toast, navigate, fetchPlayersInRoom]);
 
@@ -116,7 +117,6 @@ const Room = () => {
     try {
       const { error } = await supabase.from("rooms").update({ status: "playing" }).eq("id", roomId);
       if (error) throw error;
-      // Navigation is now handled by the real-time subscription for all players
     } catch (error: any) {
       toast({ title: "Error", description: error.message || "Failed to start game", variant: "destructive" });
     }

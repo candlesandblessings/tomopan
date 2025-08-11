@@ -43,6 +43,9 @@ export const useRoom = () => {
     roundDuration?: number;
   }) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("You must be logged in to create a room.");
+
       // Generate a random 6-character room code
       const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
       
@@ -55,7 +58,8 @@ export const useRoom = () => {
           max_players: maxPlayers,
           duration: roundDuration,
           current_players: 1,
-          status: "waiting"
+          status: "waiting",
+          created_by: user.id, // Correctly assign the creator
         })
         .select()
         .single();
@@ -69,7 +73,8 @@ export const useRoom = () => {
           room_id: roomData.id,
           name: playerName,
           is_host: true,
-          score: 0
+          score: 0,
+          user_id: user.id,
         })
         .select()
         .single();
@@ -98,6 +103,8 @@ export const useRoom = () => {
 
   const joinRoom = async (roomCode: string, playerName: string) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+
       // Find the room by code
       const { data: roomData, error: roomError } = await supabase
         .from("rooms")
@@ -122,9 +129,9 @@ export const useRoom = () => {
       // Check if player is already in the room
       const { data: existingPlayers } = await supabase
         .from("players")
-        .select("*")
+        .select("id")
         .eq("room_id", roomData.id)
-        .eq("name", playerName);
+        .eq("user_id", user?.id);
 
       if (existingPlayers && existingPlayers.length > 0) {
         // Player already in room, navigate to room
@@ -139,7 +146,8 @@ export const useRoom = () => {
           room_id: roomData.id,
           name: playerName,
           is_host: false,
-          score: 0
+          score: 0,
+          user_id: user?.id,
         })
         .select()
         .single();
