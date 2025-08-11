@@ -18,70 +18,73 @@ const Room = () => {
   const [loading, setLoading] = useState(true);
   const [isHost, setIsHost] = useState(false);
 
-  const fetchPlayersInRoom = useCallback(async () => {
+  const fetchInitialData = useCallback(async () => {
     if (!roomId) return;
-    const { data: playersData, error: playersError } = await supabase
-      .from("players")
-      .select("*")
-      .eq("room_id", roomId)
-      .order("joined_at");
+    setLoading(true);
+    try {
+      const { data: roomData, error: roomError } = await supabase
+        .from("rooms")
+        .select("*")
+        .eq("id", roomId)
+        .single();
 
-    if (playersError) {
-      console.error("Error fetching players:", playersError);
-    } else {
+      if (roomError || !roomData) throw new Error("Room not found or already ended.");
+      setRoom(roomData);
+
+      const { data: playersData, error: playersError } = await supabase
+        .from("players")
+        .select("*")
+        .eq("room_id", roomId)
+        .order("joined_at");
+
+      if (playersError) throw playersError;
       setPlayers(playersData || []);
+
+    } catch (error: any) {
+      toast({
+        title: "Error loading room",
+        description: error.message || "The room may have been deleted or does not exist.",
+        variant: "destructive",
+      });
+      navigate("/");
+    } finally {
+      setLoading(false);
     }
-  }, [roomId]);
+  }, [roomId, toast, navigate]);
+
+  useEffect(() => {
+    fetchInitialData();
+  }, [fetchInitialData]);
 
   useEffect(() => {
     if (!roomId) return;
 
-    const fetchInitialData = async () => {
-      setLoading(true);
-      try {
-        const { data: roomData, error: roomError } = await supabase
-          .from("rooms")
-          .select("*")
-          .eq("id", roomId)
-          .single();
-
-        if (roomError) throw roomError;
-        setRoom(roomData);
-        await fetchPlayersInRoom();
-      } catch (error: any) {
-        toast({
-          title: "Error loading room",
-          description: "The room may have been deleted or does not exist.",
-          variant: "destructive",
-        });
-        navigate("/");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchInitialData();
-
     const roomChannel = supabase.channel(`room-updates-${roomId}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'rooms', filter: `id=eq.${roomId}` },
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'rooms', filter: `id=eq.${roomId}` },
         (payload) => {
-          if (payload.eventType === 'DELETE') {
-            toast({ title: "Room Closed", description: "The host has closed the room." });
-            navigate('/');
-          } else {
-            const updatedRoom = payload.new;
-            setRoom(updatedRoom);
-            if (updatedRoom.status === 'playing') {
-              navigate(`/game/${roomId}`);
-            }
+          const updatedRoom = payload.new;
+          setRoom(updatedRoom);
+          if (updatedRoom.status === 'playing') {
+            navigate(`/game/${roomId}`);
           }
+        }
+      )
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'rooms', filter: `id=eq.${roomId}` },
+        () => {
+          toast({ title: "Room Closed", description: "The host has closed the room." });
+          navigate('/');
         }
       ).subscribe();
 
     const playersChannel = supabase.channel(`player-updates-${roomId}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'players', filter: `room_id=eq.${roomId}` },
-        () => {
-          fetchPlayersInRoom();
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'players', filter: `room_id=eq.${roomId}` },
+        (payload) => {
+          setPlayers((prevPlayers) => [...prevPlayers, payload.new]);
+        }
+      )
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'players', filter: `room_id=eq.${roomId}` },
+        (payload) => {
+          setPlayers((prevPlayers) => prevPlayers.filter(p => p.id !== payload.old.id));
         }
       ).subscribe();
 
@@ -89,7 +92,7 @@ const Room = () => {
       supabase.removeChannel(roomChannel);
       supabase.removeChannel(playersChannel);
     };
-  }, [roomId, toast, navigate, fetchPlayersInRoom]);
+  }, [roomId, navigate, toast]);
 
   useEffect(() => {
     const currentPlayerId = localStorage.getItem("currentPlayerId");
@@ -111,9 +114,18 @@ const Room = () => {
 
   const startGame = async () => {
     if (!room || !isHost) return;
+    if (players.length < 2) {
+      toast({
+        title: "Not enough players",
+        description: "You need at least 2 players to start the game.",
+        variant: "destructive",
+      });
+      return;
+    }
     try {
       const { error } = await supabase.from("rooms").update({ status: "playing" }).eq("id", roomId);
       if (error) throw error;
+      // Navigation is handled by the real-time subscription for all players at once.
     } catch (error: any) {
       toast({ title: "Error", description: error.message || "Failed to start game", variant: "destructive" });
     }
