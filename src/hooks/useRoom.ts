@@ -43,9 +43,6 @@ export const useRoom = () => {
     roundDuration?: number;
   }) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("You must be logged in to create a room.");
-
       const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
       
       const { data: roomData, error: roomError } = await supabase
@@ -57,7 +54,6 @@ export const useRoom = () => {
           duration: roundDuration,
           current_players: 1,
           status: "waiting",
-          created_by: user.id,
         })
         .select()
         .single();
@@ -71,7 +67,6 @@ export const useRoom = () => {
           name: playerName,
           is_host: true,
           score: 0,
-          user_id: user.id,
         })
         .select()
         .single();
@@ -79,6 +74,7 @@ export const useRoom = () => {
       if (playerError) throw playerError;
 
       if (playerData) {
+        // This is how we'll identify the host
         localStorage.setItem("currentPlayerId", playerData.id);
       }
 
