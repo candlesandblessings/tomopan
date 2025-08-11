@@ -25,31 +25,33 @@ const Game = () => {
   }, [navigate]);
 
   return (
-    <main className="container mx-auto py-10">
+    <main className="container mx-auto py-6 px-2">
       <HeadSEO
         title="Play ȚOMAPAN Online"
         description="Play ȚOMAPAN online with friends. Create or join a room to start playing."
         canonical="/game"
       />
 
-      <section className="mb-8 text-center">
-        <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
+      <section className="mb-6 text-center">
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-3">
           <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">ȚOMAPAN Online</span>
         </h1>
-        <p className="text-muted-foreground mb-6">Only online play is available. Create or join a room to play with friends!</p>
+        <p className="text-muted-foreground mb-5 text-sm">Only online play is available. Create or join a room to play with friends!</p>
         
-        <div className="flex flex-col sm:flex-row justify-center gap-4">
+        <div className="flex flex-col sm:flex-row justify-center gap-3">
           <Button 
             variant="hero" 
-            size="lg" 
+            size="sm" 
             onClick={() => navigate("/create")}
+            className="w-full sm:w-auto"
           >
             Create Room
           </Button>
           <Button 
             variant="outline" 
-            size="lg" 
+            size="sm" 
             onClick={() => navigate("/join")}
+            className="w-full sm:w-auto"
           >
             Join Room
           </Button>
@@ -57,21 +59,21 @@ const Game = () => {
       </section>
 
       <Card className="max-w-2xl mx-auto">
-        <CardHeader>
-          <CardTitle>Online Play Information</CardTitle>
+        <CardHeader className="py-4 px-5">
+          <CardTitle className="text-lg">Online Play Information</CardTitle>
         </CardHeader>
-        <CardContent>
-          <p className="mb-4">
+        <CardContent className="py-4 px-5">
+          <p className="mb-3 text-sm">
             ȚOMAPAN is now exclusively an online multiplayer game. This change allows us to provide:
           </p>
-          <ul className="list-disc pl-5 space-y-2 mb-4">
+          <ul className="list-disc pl-5 space-y-2 mb-3 text-sm">
             <li>Real-time gameplay with friends</li>
             <li>Fair letter distribution for all players</li>
             <li>Automatic scoring and validation</li>
             <li>Chat functionality during games</li>
             <li>Game history and statistics</li>
           </ul>
-          <p>
+          <p className="text-sm">
             Create a room to invite friends, or join an existing room using a room code.
           </p>
         </CardContent>

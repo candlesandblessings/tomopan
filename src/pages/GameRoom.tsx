@@ -230,102 +230,103 @@ const GameRoom = () => {
   }
 
   return (
-    <main className="container mx-auto py-6">
+    <main className="container mx-auto py-4 px-2">
       <HeadSEO 
         title={`Game Room ${room.code} - ȚOMAPAN Online`} 
         description="Playing ȚOMAPAN game" 
         canonical={`/game/${roomId}`} 
       />
       
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-3">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold">
+          <h1 className="text-xl md:text-2xl font-bold">
             Room <span className="text-primary">{room.code}</span>
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm md:text-base text-muted-foreground">
             Round {currentRound?.round_number || 1} • Letter:{" "}
-            <span className="font-bold text-primary text-xl">
+            <span className="font-bold text-primary text-lg">
               {currentRound?.letter || "A"}
             </span>
           </p>
         </div>
         
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1">
             <Clock className="h-4 w-4" />
-            <span className="font-mono">{timeLeft}s</span>
+            <span className="font-mono text-sm">{timeLeft}s</span>
           </div>
-          <Button variant="outline" onClick={handleLeaveRoom}>
-            Leave Room
+          <Button variant="outline" size="sm" onClick={handleLeaveRoom}>
+            Leave
           </Button>
         </div>
       </div>
 
-      <div className="mb-6">
+      <div className="mb-4">
         <Progress value={(timeLeft / 60) * 100} className="w-full" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-4">
         {/* Game Board */}
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>ȚOMAPAN Board</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {CATEGORIES.map((category) => (
-                  <div key={category} className="space-y-2">
-                    <label className="text-sm font-medium">{category}</label>
-                    <Input
-                      value={answers[category] || ""}
-                      onChange={(e) => handleAnswerChange(category, e.target.value)}
-                      placeholder={`Enter a ${category.toLowerCase()}...`}
-                      disabled={gameStatus !== "playing"}
-                    />
-                  </div>
-                ))}
-              </div>
-              
-              <div className="mt-6 flex justify-end">
-                <Button 
-                  onClick={handleSubmitAnswers}
-                  disabled={gameStatus !== "playing"}
-                >
-                  Submit Answers
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <Card>
+          <CardHeader className="py-3 px-4">
+            <CardTitle className="text-lg">ȚOMAPAN Board</CardTitle>
+          </CardHeader>
+          <CardContent className="py-3 px-4">
+            <div className="grid grid-cols-1 gap-3">
+              {CATEGORIES.map((category) => (
+                <div key={category} className="space-y-1">
+                  <label className="text-xs font-medium">{category}</label>
+                  <Input
+                    value={answers[category] || ""}
+                    onChange={(e) => handleAnswerChange(category, e.target.value)}
+                    placeholder={`Enter a ${category.toLowerCase()}...`}
+                    disabled={gameStatus !== "playing"}
+                    className="text-sm py-2 px-3"
+                  />
+                </div>
+              ))}
+            </div>
+            
+            <div className="mt-4 flex justify-end">
+              <Button 
+                onClick={handleSubmitAnswers}
+                disabled={gameStatus !== "playing"}
+                size="sm"
+                className="w-full sm:w-auto"
+              >
+                Submit Answers
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Players & Leaderboard */}
-        <div className="space-y-6">
+        <div className="space-y-4">
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                Players
+            <CardHeader className="py-3 px-4">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <User className="h-4 w-4" />
+                Players ({players.length})
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
+            <CardContent className="py-3 px-4">
+              <div className="space-y-2">
                 {players.map((player) => (
                   <div 
                     key={player.id} 
-                    className="flex items-center justify-between p-3 rounded-lg border bg-card"
+                    className="flex items-center justify-between p-2 rounded-lg border bg-card"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="h-3 w-3 rounded-full bg-primary"></div>
-                      <span className="font-medium">{player.name}</span>
-                    </div>
                     <div className="flex items-center gap-2">
+                      <div className="h-2 w-2 rounded-full bg-primary"></div>
+                      <span className="font-medium text-sm">{player.name}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
                       {player.is_host && (
-                        <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
+                        <span className="text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded">
                           Host
                         </span>
                       )}
-                      <span className="text-sm font-medium">{player.score}</span>
+                      <span className="text-xs font-medium">{player.score}</span>
                     </div>
                   </div>
                 ))}
@@ -334,29 +335,29 @@ const GameRoom = () => {
           </Card>
 
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Trophy className="h-5 w-5" />
+            <CardHeader className="py-3 px-4">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Trophy className="h-4 w-4" />
                 Leaderboard
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
+            <CardContent className="py-3 px-4">
+              <div className="space-y-2">
                 {[...players]
                   .sort((a, b) => b.score - a.score)
                   .slice(0, 3)
                   .map((player, index) => (
                     <div 
                       key={player.id} 
-                      className="flex items-center justify-between p-3 rounded-lg border bg-card"
+                      className="flex items-center justify-between p-2 rounded-lg border bg-card"
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center">
+                      <div className="flex items-center gap-2">
+                        <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center">
                           <span className="text-xs font-bold">{index + 1}</span>
                         </div>
-                        <span className="font-medium">{player.name}</span>
+                        <span className="font-medium text-sm">{player.name}</span>
                       </div>
-                      <span className="font-bold text-primary">{player.score}</span>
+                      <span className="font-bold text-primary text-sm">{player.score}</span>
                     </div>
                   ))}
               </div>

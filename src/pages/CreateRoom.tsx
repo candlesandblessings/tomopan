@@ -21,39 +21,42 @@ const CreateRoom = () => {
   };
 
   return (
-    <main className="container mx-auto py-10">
+    <main className="container mx-auto py-6 px-2">
       <HeadSEO title="Create ȚOMAPAN Room" description="Create an online room to play ȚOMAPAN with friends." canonical="/create" />
-      <section className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">
+      <section className="mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">
           <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Create a Room</span>
         </h1>
-        <p className="text-muted-foreground">Set up an online room for you and your friends to play ȚOMAPAN.</p>
+        <p className="text-muted-foreground text-sm">Set up an online room for you and your friends to play ȚOMAPAN.</p>
       </section>
 
       <Card className="max-w-md mx-auto">
-        <CardHeader>
-          <CardTitle>Room details</CardTitle>
+        <CardHeader className="py-4 px-5">
+          <CardTitle className="text-lg">Room details</CardTitle>
         </CardHeader>
-        <CardContent className="grid gap-4">
+        <CardContent className="grid gap-4 py-4 px-5">
           <div className="space-y-2">
-            <Label htmlFor="name">Your name</Label>
+            <Label htmlFor="name" className="text-sm">Your name</Label>
             <Input 
               id="name" 
               placeholder="Enter your name" 
               value={playerName}
               onChange={(e) => setPlayerName(e.target.value)}
+              className="py-2 px-3 text-sm"
             />
           </div>
           <div className="flex flex-col gap-3">
             <Button 
               variant="hero" 
               onClick={handleCreateRoom}
+              className="py-2 text-sm"
             >
               Create Room
             </Button>
             <Button 
               variant="secondary" 
               onClick={() => navigate("/join")}
+              className="py-2 text-sm"
             >
               Join existing room
             </Button>
@@ -61,12 +64,12 @@ const CreateRoom = () => {
         </CardContent>
       </Card>
       
-      <Card className="max-w-2xl mx-auto mt-8">
-        <CardHeader>
-          <CardTitle>How online play works</CardTitle>
+      <Card className="max-w-2xl mx-auto mt-6">
+        <CardHeader className="py-4 px-5">
+          <CardTitle className="text-lg">How online play works</CardTitle>
         </CardHeader>
-        <CardContent>
-          <ol className="list-decimal pl-5 space-y-2">
+        <CardContent className="py-4 px-5">
+          <ol className="list-decimal pl-5 space-y-2 text-sm">
             <li>Create a room and share the room code with friends</li>
             <li>Friends join using the room code</li>
             <li>Set game preferences (round duration, categories, etc.)</li>
