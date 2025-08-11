@@ -156,7 +156,12 @@ const Room = () => {
           Waiting for players to join
         </p>
         
-        <div className="flex flex-col sm:flex-row justify-center items-center gap-3 mb-6">
+        <div className="mb-6">
+          <span className="text-muted-foreground text-sm">Room Code: </span>
+          <span className="font-mono text-lg font-bold tracking-widest bg-muted text-muted-foreground px-2 py-1 rounded-md">{room.code}</span>
+        </div>
+        
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-3">
           <Button onClick={copyRoomCode} variant="outline" size="sm" className="w-full sm:w-auto">
             <Copy className="mr-2 h-4 w-4" />
             Copy Code
