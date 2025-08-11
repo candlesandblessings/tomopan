@@ -46,10 +46,8 @@ export const useRoom = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("You must be logged in to create a room.");
 
-      // Generate a random 6-character room code
       const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
       
-      // Create the room
       const { data: roomData, error: roomError } = await supabase
         .from("rooms")
         .insert({
@@ -59,14 +57,13 @@ export const useRoom = () => {
           duration: roundDuration,
           current_players: 1,
           status: "waiting",
-          created_by: user.id, // Correctly assign the creator
+          created_by: user.id,
         })
         .select()
         .single();
 
       if (roomError) throw roomError;
 
-      // Add the creator as the first player
       const { data: playerData, error: playerError } = await supabase
         .from("players")
         .insert({
@@ -90,7 +87,6 @@ export const useRoom = () => {
         description: `Room ${roomCode} created successfully!`,
       });
 
-      // Navigate to the game room
       navigate(`/room/${roomData.id}`);
     } catch (error: any) {
       toast({
@@ -103,12 +99,9 @@ export const useRoom = () => {
 
   const joinRoom = async (roomCode: string, playerName: string) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-
-      // Find the room by code
       const { data: roomData, error: roomError } = await supabase
         .from("rooms")
-        .select("*")
+        .select("id")
         .eq("code", roomCode.toUpperCase())
         .single();
 
@@ -116,62 +109,22 @@ export const useRoom = () => {
         throw new Error("Room not found");
       }
 
-      // Check if room is full
-      if (roomData.current_players >= roomData.max_players) {
-        throw new Error("Room is full");
+      const { data: newPlayerId, error: joinError } = await supabase.rpc('join_room', {
+        p_room_code: roomCode,
+        p_player_name: playerName
+      });
+
+      if (joinError) throw joinError;
+
+      if (newPlayerId) {
+        localStorage.setItem("currentPlayerId", newPlayerId);
       }
-
-      // Check if room is in waiting status
-      if (roomData.status !== "waiting") {
-        throw new Error("Game has already started");
-      }
-
-      // Check if player is already in the room
-      const { data: existingPlayers } = await supabase
-        .from("players")
-        .select("id")
-        .eq("room_id", roomData.id)
-        .eq("user_id", user?.id);
-
-      if (existingPlayers && existingPlayers.length > 0) {
-        // Player already in room, navigate to room
-        navigate(`/room/${roomData.id}`);
-        return;
-      }
-
-      // Add player to the room
-      const { data: playerData, error: playerError } = await supabase
-        .from("players")
-        .insert({
-          room_id: roomData.id,
-          name: playerName,
-          is_host: false,
-          score: 0,
-          user_id: user?.id,
-        })
-        .select()
-        .single();
-
-      if (playerError) throw playerError;
-
-      if (playerData) {
-        localStorage.setItem("currentPlayerId", playerData.id);
-      }
-
-      // Update room player count
-      const { error: updateError } = await supabase
-        .from("rooms")
-        .update({ current_players: roomData.current_players + 1 })
-        .eq("id", roomData.id);
-
-      if (updateError) throw updateError;
 
       toast({
         title: "Room joined",
         description: `Successfully joined room ${roomCode.toUpperCase()}!`,
       });
 
-      // Navigate to the game room
       navigate(`/room/${roomData.id}`);
     } catch (error: any) {
       toast({

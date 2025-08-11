@@ -34,15 +34,10 @@ const Room = () => {
   }, [roomId]);
 
   useEffect(() => {
-    if (room?.status === 'playing') {
-      navigate(`/game/${roomId}`);
-    }
-  }, [room, navigate, roomId]);
-
-  useEffect(() => {
     if (!roomId) return;
 
     const fetchInitialData = async () => {
+      setLoading(true);
       try {
         const { data: roomData, error: roomError } = await supabase
           .from("rooms")
@@ -67,30 +62,32 @@ const Room = () => {
 
     fetchInitialData();
 
-    const channel = supabase.channel(`room-channel-${roomId}`);
-    
-    channel
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'rooms', filter: `id=eq.${roomId}` },
+    const roomChannel = supabase.channel(`room-updates-${roomId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'rooms', filter: `id=eq.${roomId}` },
         (payload) => {
           if (payload.eventType === 'DELETE') {
             toast({ title: "Room Closed", description: "The host has closed the room." });
             navigate('/');
           } else {
-            setRoom(payload.new);
+            const updatedRoom = payload.new;
+            setRoom(updatedRoom);
+            if (updatedRoom.status === 'playing') {
+              navigate(`/game/${roomId}`);
+            }
           }
         }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'players', filter: `room_id=eq.${roomId}` },
-        fetchPlayersInRoom
-      )
-      .subscribe();
+      ).subscribe();
+
+    const playersChannel = supabase.channel(`player-updates-${roomId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'players', filter: `room_id=eq.${roomId}` },
+        () => {
+          fetchPlayersInRoom();
+        }
+      ).subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(roomChannel);
+      supabase.removeChannel(playersChannel);
     };
   }, [roomId, toast, navigate, fetchPlayersInRoom]);
 
