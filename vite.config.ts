@@ -7,7 +7,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  base: '/tomopan-friends-united-main/',
+  base: '/tomopan/',
   server: {
     host: "::",
     port: 8080,
