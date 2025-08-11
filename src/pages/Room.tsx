@@ -162,11 +162,13 @@ const Room = () => {
             Copy Code
           </Button>
           
-          <Button onClick={startGame} disabled={players.length < 2} size="sm" className="w-full sm:w-auto">
-            <Play className="mr-2 h-4 w-4" />
-            Start Game
-            {players.length < 2 && " (Need 2+ players)"}
-          </Button>
+          {isHost && (
+            <Button onClick={startGame} disabled={players.length < 2} size="sm" className="w-full sm:w-auto">
+              <Play className="mr-2 h-4 w-4" />
+              Start Game
+              {players.length < 2 && " (Need 2+ players)"}
+            </Button>
+          )}
 
           {isHost && (
             <Button onClick={handleEndRoom} variant="destructive" size="sm" className="w-full sm:w-auto">
