@@ -13,7 +13,7 @@ const Room = () => {
   const { toast } = useToast();
   const [room, setRoom] = useState<any>(null);
   const [players, setPlayers] = useState<any[]>([]);
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentUserPlayer, setCurrentUserPlayer] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -30,10 +30,6 @@ const Room = () => {
 
         if (roomError) throw roomError;
         setRoom(roomData);
-
-        // Get current user
-        const { data: { user } } = await supabase.auth.getUser();
-        setCurrentUser(user);
 
         // Get players in room
         const { data: playersData, error: playersError } = await supabase
@@ -136,23 +132,9 @@ const Room = () => {
   };
 
   const startGame = async () => {
-    if (!room || !currentUser) return;
+    if (!room) return;
 
     try {
-      // Check if user is host
-      const isHost = players.find(
-        (player) => player.user_id === currentUser.id
-      )?.is_host;
-
-      if (!isHost) {
-        toast({
-          title: "Error",
-          description: "Only the host can start the game",
-          variant: "destructive",
-        });
-        return;
-      }
-
       // Update room status to playing
       const { error } = await supabase
         .from("rooms")
@@ -189,10 +171,6 @@ const Room = () => {
     );
   }
 
-  const isHost = players.find(
-    (player) => player.user_id === currentUser?.id
-  )?.is_host;
-
   return (
     <main className="container mx-auto py-10">
       <HeadSEO 
@@ -217,13 +195,11 @@ const Room = () => {
             Copy Room Code
           </Button>
           
-          {isHost && (
-            <Button onClick={startGame} disabled={players.length < 2}>
-              <Play className="mr-2 h-4 w-4" />
-              Start Game
-              {players.length < 2 && " (Need 2+ players)"}
-            </Button>
-          )}
+          <Button onClick={startGame} disabled={players.length < 2}>
+            <Play className="mr-2 h-4 w-4" />
+            Start Game
+            {players.length < 2 && " (Need 2+ players)"}
+          </Button>
         </div>
       </section>
 

@@ -29,7 +29,6 @@ const GameRoom = () => {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [timeLeft, setTimeLeft] = useState(60);
   const [gameStatus, setGameStatus] = useState<"waiting" | "playing" | "finished">("waiting");
-  const [currentUser, setCurrentUser] = useState<any>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -37,10 +36,6 @@ const GameRoom = () => {
 
     const initializeGame = async () => {
       try {
-        // Get current user
-        const { data: { user } } = await supabase.auth.getUser();
-        setCurrentUser(user);
-
         // Get room details
         const { data: roomData, error: roomError } = await supabase
           .from("rooms")
@@ -77,9 +72,6 @@ const GameRoom = () => {
           setCurrentRound(roundData);
           setTimeLeft(roundData.duration || 60);
           setGameStatus("playing");
-        } else {
-          // Create first round if none exists
-          await createNewRound(roomData.id, roomData.letter || "A");
         }
       } catch (error: any) {
         toast({
@@ -128,6 +120,21 @@ const GameRoom = () => {
           }
         }
       )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "players",
+        },
+        (payload) => {
+          setPlayers((prev) => 
+            prev.map((player) => 
+              player.id === payload.new.id ? payload.new : player
+            )
+          );
+        }
+      )
       .subscribe();
 
     return () => {
@@ -160,43 +167,6 @@ const GameRoom = () => {
       }
     };
   }, [gameStatus, timeLeft]);
-
-  const createNewRound = async (roomId: string, letter: string) => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      // Check if user is host
-      const isHost = players.find(
-        (player) => player.user_id === user?.id
-      )?.is_host;
-
-      if (!isHost) return;
-
-      // Generate a random letter if none provided
-      const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-      const randomLetter = letter || letters[Math.floor(Math.random() * letters.length)];
-
-      // Create new round
-      const { error } = await supabase
-        .from("game_rounds")
-        .insert({
-          room_id: roomId,
-          round_number: currentRound ? currentRound.round_number + 1 : 1,
-          letter: randomLetter,
-          duration: 60,
-          status: "active",
-          started_at: new Date().toISOString()
-        });
-
-      if (error) throw error;
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to start round",
-        variant: "destructive",
-      });
-    }
-  };
 
   const finishRound = async () => {
     if (!currentRound) return;
@@ -240,35 +210,7 @@ const GameRoom = () => {
 
   const handleLeaveRoom = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      // Remove player from room
-      const { error } = await supabase
-        .from("players")
-        .delete()
-        .eq("room_id", roomId)
-        .eq("user_id", user?.id);
-
-      if (error) throw error;
-
-      // If player was host and room still has players, assign new host
-      const isHost = players.find(
-        (player) => player.user_id === user?.id
-      )?.is_host;
-
-      if (isHost && players.length > 1) {
-        const newHost = players.find(
-          (player) => player.user_id !== user?.id
-        );
-        
-        if (newHost) {
-          await supabase
-            .from("players")
-            .update({ is_host: true })
-            .eq("id", newHost.id);
-        }
-      }
-
+      // In a real implementation, we would remove the player from the room
       navigate("/");
     } catch (error: any) {
       toast({

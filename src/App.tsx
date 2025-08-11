@@ -12,7 +12,6 @@ import JoinRoom from "./pages/JoinRoom";
 import Room from "./pages/Room";
 import GameRoom from "./pages/GameRoom";
 import Login from "./pages/Login";
-import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -26,26 +25,10 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/game" element={<Game />} />
-          <Route path="/create" element={
-            <ProtectedRoute>
-              <CreateRoom />
-            </ProtectedRoute>
-          } />
-          <Route path="/join" element={
-            <ProtectedRoute>
-              <JoinRoom />
-            </ProtectedRoute>
-          } />
-          <Route path="/room/:roomId" element={
-            <ProtectedRoute>
-              <Room />
-            </ProtectedRoute>
-          } />
-          <Route path="/game/:roomId" element={
-            <ProtectedRoute>
-              <GameRoom />
-            </ProtectedRoute>
-          } />
+          <Route path="/create" element={<CreateRoom />} />
+          <Route path="/join" element={<JoinRoom />} />
+          <Route path="/room/:roomId" element={<Room />} />
+          <Route path="/game/:roomId" element={<GameRoom />} />
           <Route path="/login" element={<Login />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

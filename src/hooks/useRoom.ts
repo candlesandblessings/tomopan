@@ -36,15 +36,11 @@ export const useRoom = () => {
       // Generate a random 6-character room code
       const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
       
-      // Get the current user
-      const { data: { user } } = await supabase.auth.getUser();
-      
       // Create the room
       const { data: roomData, error: roomError } = await supabase
         .from("rooms")
         .insert({
           code: roomCode,
-          created_by: user?.id,
           current_players: 1,
           status: "waiting"
         })
@@ -58,7 +54,6 @@ export const useRoom = () => {
         .from("players")
         .insert({
           room_id: roomData.id,
-          user_id: user?.id,
           name: playerName,
           is_host: true,
           score: 0
@@ -105,18 +100,14 @@ export const useRoom = () => {
         throw new Error("Game has already started");
       }
 
-      // Get the current user
-      const { data: { user } } = await supabase.auth.getUser();
-
       // Check if player is already in the room
-      const { data: existingPlayer } = await supabase
+      const { data: existingPlayers } = await supabase
         .from("players")
         .select("*")
         .eq("room_id", roomData.id)
-        .eq("user_id", user?.id)
-        .single();
+        .eq("name", playerName);
 
-      if (existingPlayer) {
+      if (existingPlayers && existingPlayers.length > 0) {
         // Player already in room, navigate to room
         navigate(`/room/${roomData.id}`);
         return;
@@ -127,7 +118,6 @@ export const useRoom = () => {
         .from("players")
         .insert({
           room_id: roomData.id,
-          user_id: user?.id,
           name: playerName,
           is_host: false,
           score: 0
