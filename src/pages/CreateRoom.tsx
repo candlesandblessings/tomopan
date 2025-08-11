@@ -3,32 +3,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import HeadSEO from "@/components/seo/HeadSEO";
-import { toast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useRoom } from "@/hooks/useRoom";
 
 const CreateRoom = () => {
   const [playerName, setPlayerName] = useState("");
   const navigate = useNavigate();
+  const { createRoom } = useRoom();
 
   const handleCreateRoom = () => {
     if (!playerName.trim()) {
-      toast({ 
-        title: "Name required", 
-        description: "Please enter your name to create a room.",
-        variant: "destructive"
-      });
       return;
     }
     
-    // In a real implementation, this would create a room and navigate to it
-    toast({ 
-      title: "Room created", 
-      description: `Room created successfully! Welcome, ${playerName}.` 
-    });
-    
-    // For now, we'll just show a success message
-    // In a real app, this would redirect to the game room
+    createRoom(playerName);
   };
 
   return (

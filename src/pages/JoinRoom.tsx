@@ -3,42 +3,26 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import HeadSEO from "@/components/seo/HeadSEO";
-import { toast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useRoom } from "@/hooks/useRoom";
 
 const JoinRoom = () => {
   const [playerName, setPlayerName] = useState("");
   const [roomCode, setRoomCode] = useState("");
   const navigate = useNavigate();
+  const { joinRoom } = useRoom();
 
   const handleJoinRoom = () => {
     if (!playerName.trim()) {
-      toast({ 
-        title: "Name required", 
-        description: "Please enter your name to join a room.",
-        variant: "destructive"
-      });
       return;
     }
     
     if (!roomCode.trim()) {
-      toast({ 
-        title: "Room code required", 
-        description: "Please enter a room code to join.",
-        variant: "destructive"
-      });
       return;
     }
     
-    // In a real implementation, this would join the room
-    toast({ 
-      title: "Joining room", 
-      description: `Joining room ${roomCode.toUpperCase()} as ${playerName}...` 
-    });
-    
-    // For now, we'll just show a success message
-    // In a real app, this would redirect to the game room
+    joinRoom(roomCode, playerName);
   };
 
   return (

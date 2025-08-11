@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { NavLink } from "react-router-dom";
 import { Users, Wifi, Zap } from "lucide-react";
+import { useUser } from "@/contexts/UserContext";
 
 const Aurora = () => {
   return (
@@ -13,6 +14,8 @@ const Aurora = () => {
 };
 
 const Hero = () => {
+  const { user } = useUser();
+
   return (
     <section className="relative py-20 md:py-28">
       <Aurora />
@@ -27,12 +30,20 @@ const Hero = () => {
           Play ȚOMAPAN (Țări, Orașe, Munți, Ape, Plante, Animale, Nume) with your friends online — fast rounds, fair letters, zero setup.
         </p>
         <div className="flex items-center justify-center gap-3">
-          <NavLink to="/create">
-            <Button variant="hero" size="xl">Create Room</Button>
-          </NavLink>
-          <NavLink to="/join">
-            <Button variant="outline" size="lg">Join Room</Button>
-          </NavLink>
+          {user ? (
+            <>
+              <NavLink to="/create">
+                <Button variant="hero" size="xl">Create Room</Button>
+              </NavLink>
+              <NavLink to="/join">
+                <Button variant="outline" size="lg">Join Room</Button>
+              </NavLink>
+            </>
+          ) : (
+            <NavLink to="/login">
+              <Button variant="hero" size="xl">Get Started</Button>
+            </NavLink>
+          )}
         </div>
         <div className="mt-10 flex items-center justify-center gap-6 text-sm text-muted-foreground">
           <div className="inline-flex items-center gap-2"><Users className="h-4 w-4" /> Up to 8 players</div>

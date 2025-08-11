@@ -1,8 +1,17 @@
 import { NavLink } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Wifi } from "lucide-react";
+import { Wifi, User } from "lucide-react";
+import { useUser } from "@/contexts/UserContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Header = () => {
+  const { user, profile, signOut } = useUser();
+
   return (
     <header className="sticky top-0 z-40 backdrop-blur supports-[backdrop-filter]:bg-background/70 border-b border-border">
       <nav className="container mx-auto flex items-center justify-between h-16">
@@ -12,7 +21,30 @@ const Header = () => {
           </span>
           <span className="text-lg font-semibold tracking-tight">ȚOMAPAN Online</span>
         </NavLink>
+        
         <div className="flex items-center gap-3">
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" className="rounded-full">
+                  <User className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem className="font-medium">
+                  {profile?.first_name ? `${profile.first_name} ${profile.last_name}` : user.email}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => signOut()}>
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <NavLink to="/login">
+              <Button variant="outline">Login</Button>
+            </NavLink>
+          )}
+          
           <NavLink to="/join" className="hidden sm:block">
             <Button variant="outline">Join Room</Button>
           </NavLink>
