@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -18,12 +18,31 @@ const Room = () => {
   const [loading, setLoading] = useState(true);
   const [isHost, setIsHost] = useState(false);
 
+  const fetchPlayersInRoom = useCallback(async () => {
+    if (!roomId) return;
+    const { data: playersData, error: playersError } = await supabase
+      .from("players")
+      .select("*")
+      .eq("room_id", roomId)
+      .order("joined_at");
+
+    if (playersError) {
+      console.error("Error fetching players:", playersError);
+      toast({
+        title: "Error",
+        description: "Failed to update player list.",
+        variant: "destructive",
+      });
+    } else {
+      setPlayers(playersData || []);
+    }
+  }, [roomId, toast]);
+
   useEffect(() => {
     if (!roomId) return;
 
-    const fetchRoomData = async () => {
+    const fetchInitialData = async () => {
       try {
-        // Get room details
         const { data: roomData, error: roomError } = await supabase
           .from("rooms")
           .select("*")
@@ -33,76 +52,46 @@ const Room = () => {
         if (roomError) throw roomError;
         setRoom(roomData);
 
-        // Get players in room
-        const { data: playersData, error: playersError } = await supabase
-          .from("players")
-          .select("*")
-          .eq("room_id", roomId)
-          .order("joined_at");
-
-        if (playersError) throw playersError;
-        setPlayers(playersData || []);
-        
-        const currentPlayerId = localStorage.getItem("currentPlayerId");
-        if (currentPlayerId) {
-          const hostPlayer = (playersData || []).find(p => p.id === currentPlayerId && p.is_host);
-          setIsHost(!!hostPlayer);
-        }
-
+        await fetchPlayersInRoom();
       } catch (error: any) {
         toast({
           title: "Error",
           description: error.message || "Failed to load room",
           variant: "destructive",
         });
+        navigate("/");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchRoomData();
+    fetchInitialData();
 
-    const roomChannel = supabase
-      .channel(`room-${roomId}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "rooms", filter: `id=eq.${roomId}` },
-        (payload) => setRoom((payload as any).new)
-      )
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "players", filter: `room_id=eq.${roomId}` },
-        (payload) => {
-          setPlayers((prev) => {
-            if (prev.some((p) => p.id === payload.new.id)) {
-              return prev;
-            }
-            return [...prev, payload.new];
-          });
+    const roomSubscription = supabase
+      .channel(`room-updates-${roomId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'rooms', filter: `id=eq.${roomId}` }, (payload) => {
+        const updatedRoom = (payload as any).new;
+        setRoom(updatedRoom);
+        if (updatedRoom.status === 'playing') {
+          navigate(`/game/${roomId}`);
         }
-      )
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "players", filter: `room_id=eq.${roomId}` },
-        (payload) => {
-          setPlayers((prev) =>
-            prev.map((player) =>
-              player.id === payload.new.id ? payload.new : player
-            )
-          );
+      })
+      .subscribe();
+
+    const playersSubscription = supabase
+      .channel(`player-updates-${roomId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'players', filter: `room_id=eq.${roomId}` }, 
+        () => {
+          fetchPlayersInRoom();
         }
-      )
-      .on(
-        "postgres_changes",
-        { event: "DELETE", schema: "public", table: "players", filter: `room_id=eq.${roomId}` },
-        (payload) => setPlayers((prev) => prev.filter((p) => p.id !== (payload.old as any).id))
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(roomChannel);
+      supabase.removeChannel(roomSubscription);
+      supabase.removeChannel(playersSubscription);
     };
-  }, [roomId, toast]);
+  }, [roomId, toast, navigate, fetchPlayersInRoom]);
 
   useEffect(() => {
     const currentPlayerId = localStorage.getItem("currentPlayerId");
@@ -123,18 +112,18 @@ const Room = () => {
   };
 
   const startGame = async () => {
-    if (!room) return;
+    if (!room || !isHost) return;
     try {
       const { error } = await supabase.from("rooms").update({ status: "playing" }).eq("id", roomId);
       if (error) throw error;
-      navigate(`/game/${roomId}`);
+      // Navigation is now handled by the real-time subscription for all players
     } catch (error: any) {
       toast({ title: "Error", description: error.message || "Failed to start game", variant: "destructive" });
     }
   };
 
   const handleEndRoom = () => {
-    if (roomId) {
+    if (roomId && isHost) {
       endRoom(roomId);
     }
   };
