@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { NavLink } from "react-router-dom";
-import { Users, Sparkles, Zap } from "lucide-react";
+import { Users, Wifi, Zap } from "lucide-react";
 
 const Aurora = () => {
   return (
@@ -18,20 +18,20 @@ const Hero = () => {
       <Aurora />
       <div className="container mx-auto text-center max-w-4xl">
         <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm text-primary mb-4 animate-fade-in">
-          <Sparkles className="h-4 w-4" /> Premium, modern gameplay
+          <Wifi className="h-4 w-4" /> Online multiplayer only
         </span>
         <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight leading-tight mb-6">
           <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">ȚOMAPAN Online</span>
         </h1>
         <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
-          Play ȚOMAPAN (Țări, Orașe, Munți, Ape, Plante, Animale, Nume) with your friends — fast rounds, fair letters, zero setup.
+          Play ȚOMAPAN (Țări, Orașe, Munți, Ape, Plante, Animale, Nume) with your friends online — fast rounds, fair letters, zero setup.
         </p>
         <div className="flex items-center justify-center gap-3">
-          <NavLink to="/game">
-            <Button variant="hero" size="xl">Start a local game</Button>
-          </NavLink>
           <NavLink to="/create">
-            <Button variant="outline" size="lg">Create online room</Button>
+            <Button variant="hero" size="xl">Create Room</Button>
+          </NavLink>
+          <NavLink to="/join">
+            <Button variant="outline" size="lg">Join Room</Button>
           </NavLink>
         </div>
         <div className="mt-10 flex items-center justify-center gap-6 text-sm text-muted-foreground">
