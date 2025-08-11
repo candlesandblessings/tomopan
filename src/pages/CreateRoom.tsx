@@ -2,22 +2,31 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import HeadSEO from "@/components/seo/HeadSEO";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useRoom } from "@/hooks/useRoom";
 
 const CreateRoom = () => {
+  const [roomName, setRoomName] = useState("");
   const [playerName, setPlayerName] = useState("");
+  const [maxPlayers, setMaxPlayers] = useState("6");
+  const [roundDuration, setRoundDuration] = useState("60");
   const navigate = useNavigate();
   const { createRoom } = useRoom();
 
   const handleCreateRoom = () => {
-    if (!playerName.trim()) {
+    if (!roomName.trim() || !playerName.trim()) {
       return;
     }
     
-    createRoom(playerName);
+    createRoom({
+      roomName,
+      playerName,
+      maxPlayers: parseInt(maxPlayers),
+      roundDuration: parseInt(roundDuration)
+    });
   };
 
   return (
@@ -36,15 +45,59 @@ const CreateRoom = () => {
         </CardHeader>
         <CardContent className="grid gap-4 py-4 px-5">
           <div className="space-y-2">
-            <Label htmlFor="name" className="text-sm">Your name</Label>
+            <Label htmlFor="roomName" className="text-sm">Room name</Label>
             <Input 
-              id="name" 
+              id="roomName" 
+              placeholder="Enter room name" 
+              value={roomName}
+              onChange={(e) => setRoomName(e.target.value)}
+              className="py-2 px-3 text-sm"
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="playerName" className="text-sm">Your name</Label>
+            <Input 
+              id="playerName" 
               placeholder="Enter your name" 
               value={playerName}
               onChange={(e) => setPlayerName(e.target.value)}
               className="py-2 px-3 text-sm"
             />
           </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="maxPlayers" className="text-sm">Max players</Label>
+            <Select value={maxPlayers} onValueChange={setMaxPlayers}>
+              <SelectTrigger className="py-2 px-3 text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="2">2 players</SelectItem>
+                <SelectItem value="3">3 players</SelectItem>
+                <SelectItem value="4">4 players</SelectItem>
+                <SelectItem value="5">5 players</SelectItem>
+                <SelectItem value="6">6 players</SelectItem>
+                <SelectItem value="7">7 players</SelectItem>
+                <SelectItem value="8">8 players</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="roundDuration" className="text-sm">Round duration</Label>
+            <Select value={roundDuration} onValueChange={setRoundDuration}>
+              <SelectTrigger className="py-2 px-3 text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="30">30 seconds</SelectItem>
+                <SelectItem value="40">40 seconds</SelectItem>
+                <SelectItem value="60">60 seconds</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
           <div className="flex flex-col gap-3">
             <Button 
               variant="hero" 

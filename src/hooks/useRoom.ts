@@ -31,7 +31,17 @@ export const useRoom = () => {
     fetchRooms();
   }, [toast]);
 
-  const createRoom = async (playerName: string) => {
+  const createRoom = async ({
+    roomName,
+    playerName,
+    maxPlayers = 6,
+    roundDuration = 60
+  }: {
+    roomName: string;
+    playerName: string;
+    maxPlayers?: number;
+    roundDuration?: number;
+  }) => {
     try {
       // Generate a random 6-character room code
       const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -41,6 +51,9 @@ export const useRoom = () => {
         .from("rooms")
         .insert({
           code: roomCode,
+          name: roomName,
+          max_players: maxPlayers,
+          duration: roundDuration,
           current_players: 1,
           status: "waiting"
         })

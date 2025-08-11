@@ -182,7 +182,7 @@ const Room = () => {
       <section className="mb-6 text-center">
         <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">
           <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            Room {room.code}
+            {room.name || `Room ${room.code}`}
           </span>
         </h1>
         <p className="text-muted-foreground mb-4 text-sm">
@@ -247,7 +247,7 @@ const Room = () => {
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground text-sm">Round Duration</span>
-                <span className="font-medium text-sm">60 seconds</span>
+                <span className="font-medium text-sm">{room.duration || 60} seconds</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground text-sm">Categories</span>
