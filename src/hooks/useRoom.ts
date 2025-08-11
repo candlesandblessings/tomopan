@@ -63,16 +63,22 @@ export const useRoom = () => {
       if (roomError) throw roomError;
 
       // Add the creator as the first player
-      const { error: playerError } = await supabase
+      const { data: playerData, error: playerError } = await supabase
         .from("players")
         .insert({
           room_id: roomData.id,
           name: playerName,
           is_host: true,
           score: 0
-        });
+        })
+        .select()
+        .single();
 
       if (playerError) throw playerError;
+
+      if (playerData) {
+        localStorage.setItem("currentPlayerId", playerData.id);
+      }
 
       toast({
         title: "Room created",
@@ -127,16 +133,22 @@ export const useRoom = () => {
       }
 
       // Add player to the room
-      const { error: playerError } = await supabase
+      const { data: playerData, error: playerError } = await supabase
         .from("players")
         .insert({
           room_id: roomData.id,
           name: playerName,
           is_host: false,
           score: 0
-        });
+        })
+        .select()
+        .single();
 
       if (playerError) throw playerError;
+
+      if (playerData) {
+        localStorage.setItem("currentPlayerId", playerData.id);
+      }
 
       // Update room player count
       const { error: updateError } = await supabase
@@ -162,5 +174,25 @@ export const useRoom = () => {
     }
   };
 
-  return { rooms, loading, createRoom, joinRoom };
+  const endRoom = async (roomId: string) => {
+    try {
+      const { error } = await supabase.from("rooms").delete().eq("id", roomId);
+      if (error) throw error;
+
+      toast({
+        title: "Room Ended",
+        description: "The room has been successfully closed.",
+      });
+      localStorage.removeItem("currentPlayerId");
+      navigate("/");
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to end the room.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  return { rooms, loading, createRoom, joinRoom, endRoom };
 };

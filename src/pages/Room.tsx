@@ -5,16 +5,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import HeadSEO from "@/components/seo/HeadSEO";
-import { Users, Copy, Play } from "lucide-react";
+import { Users, Copy, Play, XCircle } from "lucide-react";
+import { useRoom } from "@/hooks/useRoom";
 
 const Room = () => {
   const { roomId } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { endRoom } = useRoom();
   const [room, setRoom] = useState<any>(null);
   const [players, setPlayers] = useState<any[]>([]);
-  const [currentUserPlayer, setCurrentUserPlayer] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isHost, setIsHost] = useState(false);
 
   useEffect(() => {
     if (!roomId) return;
@@ -40,6 +42,13 @@ const Room = () => {
 
         if (playersError) throw playersError;
         setPlayers(playersData || []);
+        
+        const currentPlayerId = localStorage.getItem("currentPlayerId");
+        if (currentPlayerId) {
+          const hostPlayer = (playersData || []).find(p => p.id === currentPlayerId && p.is_host);
+          setIsHost(!!hostPlayer);
+        }
+
       } catch (error: any) {
         toast({
           title: "Error",
@@ -53,73 +62,37 @@ const Room = () => {
 
     fetchRoomData();
 
-    // Set up real-time subscription for room updates
     const roomChannel = supabase
-      .channel("room-changes")
+      .channel(`room-${roomId}`)
       .on(
         "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "rooms",
-          filter: `id=eq.${roomId}`,
-        },
-        (payload) => {
-          setRoom(payload.new);
-        }
+        { event: "*", schema: "public", table: "rooms", filter: `id=eq.${roomId}` },
+        (payload) => setRoom((payload as any).new)
       )
       .on(
         "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "players",
-          filter: `room_id=eq.${roomId}`,
-        },
-        (payload) => {
-          setPlayers((prev) => [...prev, payload.new]);
-        }
+        { event: "INSERT", schema: "public", table: "players", filter: `room_id=eq.${roomId}` },
+        (payload) => setPlayers((prev) => [...prev, payload.new])
       )
       .on(
         "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "players",
-          filter: `room_id=eq.${roomId}`,
-        },
-        (payload) => {
-          setPlayers((prev) =>
-            prev.map((player) =>
-              player.id === payload.new.id ? payload.new : player
-            )
-          );
-        }
-      )
-      .subscribe();
-
-    // Set up real-time subscription for player updates
-    const playersChannel = supabase
-      .channel("players-changes")
-      .on(
-        "postgres_changes",
-        {
-          event: "DELETE",
-          schema: "public",
-          table: "players",
-          filter: `room_id=eq.${roomId}`,
-        },
-        (payload) => {
-          setPlayers((prev) => prev.filter((player) => player.id !== payload.old.id));
-        }
+        { event: "DELETE", schema: "public", table: "players", filter: `room_id=eq.${roomId}` },
+        (payload) => setPlayers((prev) => prev.filter((p) => p.id !== (payload.old as any).id))
       )
       .subscribe();
 
     return () => {
       supabase.removeChannel(roomChannel);
-      supabase.removeChannel(playersChannel);
     };
   }, [roomId, toast]);
+
+  useEffect(() => {
+    const currentPlayerId = localStorage.getItem("currentPlayerId");
+    if (currentPlayerId && players.length > 0) {
+      const hostPlayer = players.find(p => p.id === currentPlayerId && p.is_host);
+      setIsHost(!!hostPlayer);
+    }
+  }, [players]);
 
   const copyRoomCode = () => {
     if (room?.code) {
@@ -133,24 +106,18 @@ const Room = () => {
 
   const startGame = async () => {
     if (!room) return;
-
     try {
-      // Update room status to playing
-      const { error } = await supabase
-        .from("rooms")
-        .update({ status: "playing" })
-        .eq("id", roomId);
-
+      const { error } = await supabase.from("rooms").update({ status: "playing" }).eq("id", roomId);
       if (error) throw error;
-
-      // Navigate to game page
       navigate(`/game/${roomId}`);
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to start game",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: error.message || "Failed to start game", variant: "destructive" });
+    }
+  };
+
+  const handleEndRoom = () => {
+    if (roomId) {
+      endRoom(roomId);
     }
   };
 
@@ -189,7 +156,7 @@ const Room = () => {
           Waiting for players to join
         </p>
         
-        <div className="flex flex-col sm:flex-row justify-center gap-3 mb-6">
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-3 mb-6">
           <Button onClick={copyRoomCode} variant="outline" size="sm" className="w-full sm:w-auto">
             <Copy className="mr-2 h-4 w-4" />
             Copy Code
@@ -200,6 +167,13 @@ const Room = () => {
             Start Game
             {players.length < 2 && " (Need 2+ players)"}
           </Button>
+
+          {isHost && (
+            <Button onClick={handleEndRoom} variant="destructive" size="sm" className="w-full sm:w-auto">
+              <XCircle className="mr-2 h-4 w-4" />
+              End Room
+            </Button>
+          )}
         </div>
       </section>
 
