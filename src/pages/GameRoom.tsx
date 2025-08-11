@@ -255,7 +255,7 @@ const GameRoom = () => {
             <Clock className="h-4 w-4" />
             <span className="font-mono">{timeLeft}s</span>
           </div>
-          <Button variant="outline" onClick={handleLeaveRoom} size="sm">
+          <Button variant="outline" onClick={handleLeaveRoom}>
             Leave Room
           </Button>
         </div>
@@ -291,7 +291,6 @@ const GameRoom = () => {
                 <Button 
                   onClick={handleSubmitAnswers}
                   disabled={gameStatus !== "playing"}
-                  className="w-full sm:w-auto"
                 >
                   Submit Answers
                 </Button>
@@ -300,17 +299,17 @@ const GameRoom = () => {
           </Card>
         </div>
 
-        {/* Players & Leaderboard - Stacked on mobile */}
+        {/* Players & Leaderboard */}
         <div className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <User className="h-5 w-5" />
-                Players ({players.length})
+                Players
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3 max-h-60 overflow-y-auto">
+              <div className="space-y-3">
                 {players.map((player) => (
                   <div 
                     key={player.id} 
@@ -318,11 +317,11 @@ const GameRoom = () => {
                   >
                     <div className="flex items-center gap-3">
                       <div className="h-3 w-3 rounded-full bg-primary"></div>
-                      <span className="font-medium truncate max-w-[120px]">{player.name}</span>
+                      <span className="font-medium">{player.name}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       {player.is_host && (
-                        <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded hidden sm:inline">
+                        <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
                           Host
                         </span>
                       )}
@@ -355,7 +354,7 @@ const GameRoom = () => {
                         <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center">
                           <span className="text-xs font-bold">{index + 1}</span>
                         </div>
-                        <span className="font-medium truncate max-w-[100px]">{player.name}</span>
+                        <span className="font-medium">{player.name}</span>
                       </div>
                       <span className="font-bold text-primary">{player.score}</span>
                     </div>

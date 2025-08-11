@@ -14,29 +14,29 @@ const Aurora = () => {
 
 const Hero = () => {
   return (
-    <section className="relative py-12 md:py-20">
+    <section className="relative py-20 md:py-28">
       <Aurora />
       <div className="container mx-auto text-center max-w-4xl">
-        <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs text-primary mb-3 animate-fade-in">
-          <Wifi className="h-3 w-3" /> Online multiplayer only
+        <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm text-primary mb-4 animate-fade-in">
+          <Wifi className="h-4 w-4" /> Online multiplayer only
         </span>
-        <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight leading-tight mb-4">
+        <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight leading-tight mb-6">
           <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">ȚOMAPAN Online</span>
         </h1>
-        <p className="text-base md:text-lg text-muted-foreground mb-6 max-w-2xl mx-auto">
+        <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
           Play ȚOMAPAN (Țări, Orașe, Munți, Ape, Plante, Animale, Nume) with your friends online — fast rounds, fair letters, zero setup.
         </p>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-          <NavLink to="/create" className="w-full sm:w-auto">
-            <Button variant="hero" size="lg" className="w-full sm:w-auto">Create Room</Button>
+        <div className="flex items-center justify-center gap-3">
+          <NavLink to="/create">
+            <Button variant="hero" size="xl">Create Room</Button>
           </NavLink>
-          <NavLink to="/join" className="w-full sm:w-auto">
-            <Button variant="outline" size="lg" className="w-full sm:w-auto">Join Room</Button>
+          <NavLink to="/join">
+            <Button variant="outline" size="lg">Join Room</Button>
           </NavLink>
         </div>
-        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4 text-xs text-muted-foreground">
-          <div className="inline-flex items-center gap-2"><Users className="h-3 w-3" /> Up to 8 players</div>
-          <div className="inline-flex items-center gap-2"><Zap className="h-3 w-3" /> Lightning fast rounds</div>
+        <div className="mt-10 flex items-center justify-center gap-6 text-sm text-muted-foreground">
+          <div className="inline-flex items-center gap-2"><Users className="h-4 w-4" /> Up to 8 players</div>
+          <div className="inline-flex items-center gap-2"><Zap className="h-4 w-4" /> Lightning fast rounds</div>
         </div>
       </div>
     </section>

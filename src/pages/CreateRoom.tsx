@@ -21,10 +21,10 @@ const CreateRoom = () => {
   };
 
   return (
-    <main className="container mx-auto py-6">
+    <main className="container mx-auto py-10">
       <HeadSEO title="Create ȚOMAPAN Room" description="Create an online room to play ȚOMAPAN with friends." canonical="/create" />
-      <section className="mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">
+      <section className="mb-8">
+        <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">
           <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Create a Room</span>
         </h1>
         <p className="text-muted-foreground">Set up an online room for you and your friends to play ȚOMAPAN.</p>
@@ -48,14 +48,12 @@ const CreateRoom = () => {
             <Button 
               variant="hero" 
               onClick={handleCreateRoom}
-              className="w-full"
             >
               Create Room
             </Button>
             <Button 
               variant="secondary" 
               onClick={() => navigate("/join")}
-              className="w-full"
             >
               Join existing room
             </Button>
@@ -63,12 +61,12 @@ const CreateRoom = () => {
         </CardContent>
       </Card>
       
-      <Card className="max-w-2xl mx-auto mt-6">
+      <Card className="max-w-2xl mx-auto mt-8">
         <CardHeader>
           <CardTitle>How online play works</CardTitle>
         </CardHeader>
         <CardContent>
-          <ol className="list-decimal pl-5 space-y-2 text-sm">
+          <ol className="list-decimal pl-5 space-y-2">
             <li>Create a room and share the room code with friends</li>
             <li>Friends join using the room code</li>
             <li>Set game preferences (round duration, categories, etc.)</li>

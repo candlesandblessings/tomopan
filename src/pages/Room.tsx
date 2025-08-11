@@ -172,30 +172,30 @@ const Room = () => {
   }
 
   return (
-    <main className="container mx-auto py-6">
+    <main className="container mx-auto py-10">
       <HeadSEO 
         title={`Room ${room.code} - ȚOMAPAN Online`} 
         description="Waiting room for ȚOMAPAN game" 
         canonical={`/room/${roomId}`} 
       />
       
-      <section className="mb-6 text-center">
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">
+      <section className="mb-8 text-center">
+        <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">
           <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
             Room {room.code}
           </span>
         </h1>
-        <p className="text-muted-foreground mb-4">
+        <p className="text-muted-foreground mb-6">
           Waiting for players to join
         </p>
         
-        <div className="flex flex-col sm:flex-row justify-center gap-3 mb-6">
-          <Button onClick={copyRoomCode} variant="outline" className="w-full sm:w-auto">
+        <div className="flex justify-center gap-4 mb-8">
+          <Button onClick={copyRoomCode} variant="outline">
             <Copy className="mr-2 h-4 w-4" />
             Copy Room Code
           </Button>
           
-          <Button onClick={startGame} disabled={players.length < 2} className="w-full sm:w-auto">
+          <Button onClick={startGame} disabled={players.length < 2}>
             <Play className="mr-2 h-4 w-4" />
             Start Game
             {players.length < 2 && " (Need 2+ players)"}
@@ -203,7 +203,7 @@ const Room = () => {
         </div>
       </section>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -212,7 +212,7 @@ const Room = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3 max-h-60 overflow-y-auto">
+            <div className="space-y-3">
               {players.map((player) => (
                 <div 
                   key={player.id} 
@@ -220,7 +220,7 @@ const Room = () => {
                 >
                   <div className="flex items-center gap-3">
                     <div className="h-3 w-3 rounded-full bg-primary"></div>
-                    <span className="font-medium truncate max-w-[150px]">{player.name}</span>
+                    <span className="font-medium">{player.name}</span>
                   </div>
                   {player.is_host && (
                     <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
@@ -251,7 +251,7 @@ const Room = () => {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Categories</span>
-                <span className="font-medium text-sm text-right">Țări, Orașe, Munți, Ape, Plante, Animale, Nume</span>
+                <span className="font-medium">Țări, Orașe, Munți, Ape, Plante, Animale, Nume</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Max Players</span>

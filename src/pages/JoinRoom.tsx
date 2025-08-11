@@ -26,10 +26,10 @@ const JoinRoom = () => {
   };
 
   return (
-    <main className="container mx-auto py-6">
+    <main className="container mx-auto py-10">
       <HeadSEO title="Join ȚOMAPAN Room" description="Join an online ȚOMAPAN room with a code." canonical="/join" />
-      <section className="mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">
+      <section className="mb-8">
+        <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">
           <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Join a Room</span>
         </h1>
         <p className="text-muted-foreground">Enter a room code to join an existing ȚOMAPAN game.</p>
@@ -63,14 +63,12 @@ const JoinRoom = () => {
             <Button 
               variant="hero" 
               onClick={handleJoinRoom}
-              className="w-full"
             >
               Join Room
             </Button>
             <Button 
               variant="secondary" 
               onClick={() => navigate("/create")}
-              className="w-full"
             >
               Create new room
             </Button>
@@ -78,12 +76,12 @@ const JoinRoom = () => {
         </CardContent>
       </Card>
       
-      <Card className="max-w-2xl mx-auto mt-6">
+      <Card className="max-w-2xl mx-auto mt-8">
         <CardHeader>
           <CardTitle>How to get a room code</CardTitle>
         </CardHeader>
         <CardContent>
-          <ul className="list-disc pl-5 space-y-2 text-sm">
+          <ul className="list-disc pl-5 space-y-2">
             <li>Ask a friend who created a room for the room code</li>
             <li>Room codes are 4-6 character alphanumeric codes (e.g. A7B9)</li>
             <li>Codes are case-insensitive</li>
